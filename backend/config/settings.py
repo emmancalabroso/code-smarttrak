@@ -6,6 +6,26 @@ from django.core.exceptions import ImproperlyConfigured
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+REPO_ROOT = BASE_DIR.parent
+
+
+def load_env_file(path: Path) -> None:
+    if not path.exists():
+        return
+
+    for raw_line in path.read_text().splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip("'").strip('"')
+        os.environ.setdefault(key, value)
+
+
+load_env_file(REPO_ROOT / ".env")
+load_env_file(BASE_DIR / ".env")
 
 
 def env_bool(name: str, default: bool = False) -> bool:
@@ -100,14 +120,16 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-database_url = os.getenv("DATABASE_URL")
+database_url = os.getenv("DATABASE_URL") or os.getenv("POSTGRES_URL")
 if database_url:
     DATABASES = {"default": postgres_database_from_url(database_url)}
-elif os.getenv("POSTGRES_DB") or os.getenv("PGDATABASE"):
+elif os.getenv("POSTGRES_DB") or os.getenv("POSTGRES_DATABASE") or os.getenv("PGDATABASE"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("POSTGRES_DB") or os.getenv("PGDATABASE", "smarttrak"),
+            "NAME": os.getenv("POSTGRES_DB")
+            or os.getenv("POSTGRES_DATABASE")
+            or os.getenv("PGDATABASE", "smarttrak"),
             "USER": os.getenv("POSTGRES_USER") or os.getenv("PGUSER", "smarttrak"),
             "PASSWORD": os.getenv("POSTGRES_PASSWORD")
             or os.getenv("PGPASSWORD", "smarttrak"),
