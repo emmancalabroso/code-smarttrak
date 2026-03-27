@@ -8,12 +8,13 @@ Simple starter application for SmartTrak using:
 ## Frontend
 
 ```bash
-cd frontend
 npm install
 npm run dev
 ```
 
 Open `http://localhost:3000`.
+
+You can also still run it from inside `frontend/` with `npm run dev`.
 
 ## Backend
 
@@ -63,11 +64,13 @@ The backend includes:
 
 ### Frontend
 
-1. Create a second Vercel project with `frontend` as the root directory.
-2. Add:
+1. Create a second Vercel project for the Next.js app.
+2. Preferred: set the Vercel root directory to `frontend`.
+3. If the Vercel project is pointed at the repo root instead, this repo now includes a root workspace `package.json` so `npm install` and `npm run build` still resolve to the frontend app.
+4. Add:
 
 ```bash
 NEXT_PUBLIC_API_URL=https://your-backend-domain.vercel.app
 ```
 
-3. Deploy the project.
+5. Deploy the project.
