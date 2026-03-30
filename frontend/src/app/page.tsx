@@ -11,11 +11,13 @@ import {
 
 export default function HomePage() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [signUpEmail, setSignUpEmail] = useState("");
   const [signUpPassword, setSignUpPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+  const [loginMessage, setLoginMessage] = useState("");
   const [signUpMessage, setSignUpMessage] = useState("");
 
   function getStoredUser(): StoredUser {
@@ -35,6 +37,7 @@ export default function HomePage() {
   function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoginError("");
+    setLoginMessage("");
 
     if (!loginEmail.trim() || !loginPassword.trim()) {
       setLoginError("Please enter both your email address and password.");
@@ -59,6 +62,7 @@ export default function HomePage() {
     event.preventDefault();
     setSignUpMessage("");
     setLoginError("");
+    setLoginMessage("");
 
     if (!signUpEmail.trim() || !signUpPassword.trim()) {
       setSignUpMessage("Please provide an email address and password to sign up.");
@@ -75,6 +79,8 @@ export default function HomePage() {
     setLoginEmail(newUser.email);
     setLoginPassword("");
     setSignUpPassword("");
+    setLoginMessage("Account created. Log in with the credentials you just saved.");
+    setActiveTab("login");
   }
 
   return (
@@ -105,23 +111,72 @@ export default function HomePage() {
         </div>
 
         <div className="px-6 py-8 sm:px-8 sm:py-10 lg:px-10">
-          <div className="grid gap-6 lg:grid-cols-2">
-            <article className="rounded-3xl border border-stone-200 bg-white p-6 shadow-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.26em] text-stone-500">
-                    Log In
-                  </p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-stone-900">
-                    Access your account
-                  </h2>
-                </div>
-                <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-orange-700">
-                  Returning
-                </span>
+          <article className="rounded-3xl border border-stone-200 bg-white p-6 shadow-lg sm:p-8">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.26em] text-stone-500">
+                  {activeTab === "login" ? "Log In" : "Sign Up"}
+                </p>
+                <h2 className="mt-3 text-2xl font-semibold tracking-tight text-stone-900 sm:text-3xl">
+                  {activeTab === "login" ? "Access your account" : "Create a new profile"}
+                </h2>
               </div>
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${
+                  activeTab === "login"
+                    ? "bg-orange-100 text-orange-700"
+                    : "bg-orange-50 text-orange-700 ring-1 ring-orange-200"
+                }`}
+              >
+                {activeTab === "login" ? "Returning" : "New Here"}
+              </span>
+            </div>
 
-              <form className="mt-8 space-y-5" onSubmit={handleLogin}>
+            <div
+              className="mt-8 grid grid-cols-2 rounded-2xl bg-stone-100 p-1"
+              role="tablist"
+              aria-label="Authentication options"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "login"}
+                aria-controls="login-panel"
+                id="login-tab"
+                onClick={() => setActiveTab("login")}
+                className={`rounded-xl px-4 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition ${
+                  activeTab === "login"
+                    ? "bg-white text-stone-900 shadow-sm"
+                    : "text-stone-500 hover:text-stone-700"
+                }`}
+              >
+                Log In
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "signup"}
+                aria-controls="signup-panel"
+                id="signup-tab"
+                onClick={() => setActiveTab("signup")}
+                className={`rounded-xl px-4 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition ${
+                  activeTab === "signup"
+                    ? "bg-white text-orange-700 shadow-sm"
+                    : "text-stone-500 hover:text-stone-700"
+                }`}
+              >
+                Sign Up
+              </button>
+            </div>
+
+            {activeTab === "login" ? (
+              <form
+                className="mt-8 space-y-5"
+                onSubmit={handleLogin}
+                role="tabpanel"
+                id="login-panel"
+                aria-labelledby="login-tab"
+              >
                 <label className="block">
                   <span className="text-sm font-medium text-stone-700">Email address</span>
                   <input
@@ -150,6 +205,10 @@ export default function HomePage() {
                   <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                     {loginError}
                   </p>
+                ) : loginMessage ? (
+                  <p className="rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
+                    {loginMessage}
+                  </p>
                 ) : (
                   <p className="text-sm text-stone-500">
                     Use your saved credentials, or sign up first to create them.
@@ -163,24 +222,14 @@ export default function HomePage() {
                   Log In
                 </button>
               </form>
-            </article>
-
-            <article className="rounded-3xl border border-orange-200 bg-orange-50 p-6 shadow-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.26em] text-orange-600">
-                    Sign Up
-                  </p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-stone-900">
-                    Create a new profile
-                  </h2>
-                </div>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-orange-700 ring-1 ring-orange-200">
-                  New Here
-                </span>
-              </div>
-
-              <form className="mt-8 space-y-5" onSubmit={handleSignUp}>
+            ) : (
+              <form
+                className="mt-8 space-y-5"
+                onSubmit={handleSignUp}
+                role="tabpanel"
+                id="signup-panel"
+                aria-labelledby="signup-tab"
+              >
                 <label className="block">
                   <span className="text-sm font-medium text-stone-700">Email address</span>
                   <input
@@ -223,8 +272,8 @@ export default function HomePage() {
                   Sign Up
                 </button>
               </form>
-            </article>
-          </div>
+            )}
+          </article>
         </div>
       </section>
     </main>
